@@ -1,4 +1,4 @@
-## Viabilidad Técnica
+## Viabilidad Técnica de Investigacion
 
 La presente investigación se considera técnicamente viable debido a que todas las tecnologías, herramientas y recursos requeridos para su desarrollo son de acceso libre, gratuito o ya se encuentran disponibles dentro del entorno de trabajo. Esto permite realizar la implementación y evaluación sin incurrir en costos adicionales de licenciamiento o adquisición de infraestructura.
 
