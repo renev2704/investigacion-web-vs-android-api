@@ -32,14 +32,14 @@ gantt
     Diseño de base de datos :b3, 2026-10-03, 5d
     Diseño UI/UX Web y Móvil :b4, 2026-10-08, 10d
 
-    section Desarrollo Web - Alejandra
+    section Desarrollo Web
     Configuración del proyecto web :c1, 2026-10-18, 5d
     Desarrollo de autenticación y seguridad :c2, 2026-10-23, 8d
     Desarrollo de módulos principales :c3, 2026-10-31, 15d
     Integración con APIs :c4, 2026-11-15, 10d
     Ajustes finales y pruebas web :c5, 2026-11-25, 8d
 
-    section Desarrollo Móvil - Diego
+    section Desarrollo Móvil
     Configuración del proyecto móvil :d1, 2026-10-18, 5d
     Implementación de interfaces móviles :d2, 2026-10-23, 10d
     Desarrollo de funcionalidades principales :d3, 2026-11-02, 13d
