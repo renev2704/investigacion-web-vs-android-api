@@ -12,53 +12,32 @@ gantt
     dateFormat YYYY-MM-DD
     axisFormat %d/%m
 
-    section Investigación y Planificación
-    Selección del tema y organización inicial :done, a1, 2026-09-07, 1d
-    Planteamiento del problema :done, a2, 2026-09-08, 1d
-    Revisión del planteamiento :done, a3, 2026-09-09, 1d
-    Pregunta de investigación :done, a4, 2026-09-10, 1d
-    Delimitación del estudio :done, a5, 2026-09-11, 1d
-    Objetivos general y específicos :done, a6, 2026-09-12, 1d
-    Revisión de objetivos :done, a7, 2026-09-13, 1d
-    Justificación :done, a8, 2026-09-14, 1d
-    Investigación bibliográfica :done, a9, 2026-09-15, 1d
-    Cronograma y viabilidad técnica :done, a10, 2026-09-16, 1d
-    Revisión integral del documento :done, a11, 2026-09-17, 1d
-    * Entregable 1 - Documento de investigación :milestone, m1, 2026-09-18, 0d
+    section Entrega 1: Perfil
+Definición del tema           :done, t1, 2026-08-24, 7d
+Redacción del perfil          :done, t2, after t1, 10d
+Revisión y entrega de perfil  :milestone, m1, 2026-09-18, 0d
 
-    section Análisis y Diseño
-    Levantamiento de requerimientos :b1, 2026-09-19, 7d
-    Diseño de arquitectura del sistema :b2, 2026-09-26, 7d
-    Diseño de base de datos :b3, 2026-10-03, 5d
-    Diseño UI/UX Web y Móvil :b4, 2026-10-08, 10d
+section Entrega 2: Marco y metodología
+Estado del arte               :active, t3, 2026-09-19, 12d
+Diseño experimental           :t4, after t3, 6d
+Definición de métricas        :t5, after t4, 4d
+Revisión y entrega parcial    :milestone, m2, 2026-10-10, 0d
 
-    section Desarrollo Web
-    Configuración del proyecto web :c1, 2026-10-18, 5d
-    Desarrollo de autenticación y seguridad :c2, 2026-10-23, 8d
-    Desarrollo de módulos principales :c3, 2026-10-31, 15d
-    Integración con APIs :c4, 2026-11-15, 10d
-    Ajustes finales y pruebas web :c5, 2026-11-25, 8d
+section Entrega 3: Desarrollo e instrumentación
+Diseño de API REST            :t6, 2026-10-11, 5d
+Implementación backend        :t7, after t6, 8d
+Cliente web                   :t8, after t7, 6d
+Cliente Android               :t9, after t7, 6d
+Instrumentación de métricas   :t10, after t8, 4d
+Pruebas piloto                :t11, after t10, 4d
+Revisión y entrega parcial    :milestone, m3, 2026-11-13, 0d
 
-    section Desarrollo Móvil
-    Configuración del proyecto móvil :d1, 2026-10-18, 5d
-    Implementación de interfaces móviles :d2, 2026-10-23, 10d
-    Desarrollo de funcionalidades principales :d3, 2026-11-02, 13d
-    Consumo e integración de APIs :d4, 2026-11-15, 10d
-    Pruebas y optimización móvil :d5, 2026-11-25, 8d
-
-    section APIs - Trabajo Compartido
-    Diseño de endpoints y contratos :e1, 2026-10-18, 5d
-    Implementación de APIs REST :e2, 2026-10-23, 15d
-    Validaciones y seguridad :e3, 2026-11-07, 8d
-    Integración con base de datos :e4, 2026-11-15, 10d
-    Pruebas de rendimiento y documentación :e5, 2026-11-25, 8d
-
-    section Entregables
-    * Entregable 2 - Diseño y arquitectura aprobada :milestone, em2, 2026-10-18, 0d
-    * Entregable 3 - Primer prototipo funcional :milestone, em3, 2026-11-18, 0d
-
-    section Cierre del Proyecto
-    Pruebas integrales del sistema :f1, 2026-12-03, 2d
-    Correcciones finales y documentación :f2, 2026-12-05, 1d
-    Entrega Final :milestone, mf, 2026-12-06, 0d
+section Entrega 4: Experimentos y resultados
+Generación de datos (1k/10k/100k) :t12, 2026-11-14, 4d
+Experimentos formales (10 repeticiones) :crit, t13, after t12, 8d
+Holgura para repetición de experimentos :t14, after t13, 5d
+Análisis estadístico          :t15, after t14, 4d
+Redacción de resultados       :t16, after t15, 3d
+Conclusiones y recomendaciones:t17, after t16, 2d
+Entrega final y defensa       :milestone, m4, 2026-12-06, 0d
 ```
