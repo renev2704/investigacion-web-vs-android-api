@@ -4,14 +4,14 @@ Perfil de investigación — Entrega 1 de 4
 
 ## Integrantes
 
-| Nombre | Usuario GitHub |
-|---|---|
-| Nombre Apellido | [@usuario1](https://github.com/usuario1) |
-| Nombre Apellido | [@usuario2](https://github.com/usuario2) |
-| Nombre Apellido | [@usuario3](https://github.com/usuario3) |
-| Nombre Apellido | [@usuario4](https://github.com/usuario4) |
-| Nombre Apellido | [@usuario5](https://github.com/usuario5) |
-| Nombre Apellido | [@usuario6](https://github.com/usuario6) |
+| No. | Nombre Completo | N° Carnet | Usuario GitHub |
+|---|---|---|---|
+| 1 | Diego Alberto Chicas Martinez | 25-1005-2023 | [@DiegoChicas](https://github.com/DiegoChicas) |
+| 2 | José David Grande Lorenzana | 25-4832-2022 | [@DavidGrande06](https://github.com/DavidGrande06) |
+| 3 | Alejandra Carolina Guillen Campos | 27-1517-2025 | [@aguillencampos](https://github.com/aguillencampos) |
+| 4 | Nelson Eduardo Ramirez Ramirez | | |
+| 5 | Miguel Angel Rivera Lopez | 25-0948-2023 | [@miguelrivera102004-bot](https://github.com/miguelrivera102004-bot) |
+| 6 | René Daniel Ventura Sibrian | 27-0417-2025 | [@renev2704](https://github.com/renev2704) |
 
 ## Problema
 
