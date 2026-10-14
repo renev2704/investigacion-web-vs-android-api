@@ -54,3 +54,64 @@ Este mismo estudio catalogó 68 métricas específicas para evaluar estas subcar
 
 ISO/IEC 25010 resulta el estándar adecuado para esta investigación porque proporciona un vocabulario preciso y operacionalizable para definir las métricas de comparación. En lugar de hablar genéricamente de “rapidez” o “ligereza”, la norma permite especificar que se medirá el comportamiento temporal (tiempo de respuesta en milisegundos) y la utilización de recursos (consumo de memoria en megabytes) bajo condiciones controladas y reproducibles.
 Esta delimitación conceptual es requisito indispensable para que los resultados de la comparación entre aplicación web y aplicación Android sean interpretables y comparables con la literatura existente.
+Instrumentos de medición
+Para aplicación web:
+Chrome DevTools (Performance panel): permite
+ registrar y analizar métricas como LCP (Largest Contentful Paint), CLS
+ (Cumulative Layout Shift) e INP (Interaction to Next Paint), además de
+ proporcionar una línea de tiempo detallada de actividad de red,
+ renderizado y ejecución de JavaScript. La API performance.memory permite
+ obtener estimaciones del heap JavaScript utilizado.
+Para aplicación Android:
+Android Profiler (Memory Profiler):
+ componente de Android Studio que muestra el uso de memoria en tiempo real,
+ permite capturar heap dumps, forzar recolección de basura y rastrear
+ asignaciones. Las categorías de memoria reportadas incluyen Java/Kotlin,
+ Native, Graphics, Stack, Code y Other.
+Para backend y análisis complementario:
+JMH (Java Microbenchmark Harness): estándar
+ de facto para microbenchmarks en JVM. Permite controlar iteraciones de
+ calentamiento, mediciones y evitar sesgos del compilador JIT.
+Apache JMeter: herramienta para pruebas de
+ carga que simula usuarios concurrentes y mide throughput, tiempo de
+ respuesta y tasas de error sobre endpoints HTTP.
+La selección de estos instrumentos está fundamentada en su
+capacidad para producir mediciones comparables con las reportadas en la
+literatura y en su adecuación a las subcaracterísticas de ISO/IEC 25010 que
+esta investigación operacionaliza.
+Sistemas de inventario y operaciones CRUD
+Un sistema de inventario es un tipo de sistema de
+información diseñado para gestionar el flujo de productos, existencias y
+movimientos dentro de una organización. Las operaciones fundamentales sobre los
+recursos de inventario (productos, categorías, movimientos de stock)
+corresponden al paradigma CRUD (Create, Read, Update, Delete), que en el
+contexto de APIs REST se mapea directamente a los métodos HTTP POST, GET,
+PUT/PATCH y DELETE .
+El sistema de inventario es un caso representativo para esta
+investigación por tres razones:
+Operaciones repetitivas: Las consultas de productos y
+actualizaciones de existencias son operaciones de alta frecuencia en entornos
+empresariales, que las hace susceptibles a diferencias de rendimiento que se
+acumulan con el uso.
+Volúmenes crecientes de datos: Un catálogo de
+inventario puede variar desde cientos hasta cientos de miles de registros. Esta
+variabilidad permite estudiar cómo el rendimiento de cada plataforma cliente se
+degrada (o no) a medida que aumenta el volumen de información transferida.
+Payloads de tamaño variable: Las respuestas de un
+endpoint de listado de productos escalan linealmente con el número de registros
+solicitados, lo que expone de manera directa las diferencias en los costos de
+serialización, transferencia y renderizado entre plataformas.
+Esta categoría justifica el dominio de aplicación elegido,
+ya que el inventario proporciona un escenario realista donde las decisiones
+sobre plataforma cliente (web vs Android) tienen implicaciones prácticas para
+desarrolladores y organizaciones que implementan sistemas multiplataforma.
+## Operacionalización de variables
+
+| Variable | Definición operacional | Unidad | Instrumento |
+| :--- | :--- | :---: | :--- |
+| **Tiempo de respuesta web** | ms entre envío de petición fetch y recepción del último byte en Chrome | ms | Chrome DevTools / Performance API (`performance.now()`) |
+| **Tiempo de respuesta Android** | ms entre envío con Retrofit y callback `onResponse` | ms | Android Profiler + logs con `System.nanoTime()` |
+| **Consumo de memoria web** | MB retenidos en heap JS durante la operación | MB | `performance.memory` (Chrome) |
+| **Consumo de memoria Android** | MB retenidos en heap Java/Kotlin durante la operación | MB | Android Profiler (Memory Profiler) |
+| **Volumen de registros** | Número de filas en tabla productos/existencias | entero | Script SQL de seeding |
+| **Tipo de operación** | CRUD: Create, Read, Update, Delete | categórico | Endpoint invocado |
