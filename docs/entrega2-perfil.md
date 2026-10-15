@@ -46,3 +46,19 @@ Los criterios de inclusión son la relación directa con el rendimiento de aplic
 **Kotlin vs Flutter vs React Native (2025):** Evalúa el rendimiento de tres enfoques de desarrollo móvil en llamadas frecuentes a API, concluyendo que Kotlin nativo es el más rápido y estable, Flutter destaca en renderizado y React Native sufre por el puente JavaScript. Este antecedente confirma que la tecnología del cliente determina el rendimiento, pero al comparar solo frameworks móviles, no aporta evidencia sobre cómo se comportaría una aplicación web bajo las mismas condiciones.
 
 **Xamarin vs nativo (Universidad de Tartu):** Compara el rendimiento de Xamarin frente al desarrollo nativo en arranque y peticiones REST con operaciones masivas sobre SQLite (10,000 registros). Sus resultados muestran que el desarrollo nativo es aproximadamente 2× más rápido en arranque y peticiones, y usa hasta 20× menos memoria. Este estudio aporta evidencia sobre el impacto de la tecnología en el rendimiento y la memoria, pero al comparar frameworks y no plataformas (web vs Android), y al usar SQLite en lugar de SQL Server, no cubre el vacío que esta investigación aborda.
+Eficiencia de desempeño según ISO/IEC 25010
+La norma ISO/IEC 25010 define la eficiencia de desempeño como la capacidad de un producto de software para proporcionar un rendimiento apropiado, en relación con la cantidad de recursos utilizados bajo condiciones establecidas.
+Esta característica se descompone en tres subcaracterísticas medibles: comportamiento temporal (tiempos de respuesta y procesamiento), utilización de recursos (cantidad y tipos de recursos consumidos) y capacidad (límites máximos de parámetros del sistema) .
+Un estudio sistemático reciente sobre eficiencia de desempeño en ISO/IEC 25010, que revisó 38 estudios primarios entre 2014 y 2024, identificó que el comportamiento temporal es la subcaracterística más investigada (48% de los estudios), seguida de la utilización de recursos (36%) y la capacidad (16%) .
+Este mismo estudio catalogó 68 métricas específicas para evaluar estas subcaracterísticas, lo que proporciona una base objetiva para medir y comparar el rendimiento del software.
+
+## **Marco teórico**
+
+**Eficiencia de desempeño según ISO/IEC 25010**
+
+La norma ISO/IEC 25010 define la eficiencia de desempeño como la capacidad de un producto de software para proporcionar un rendimiento apropiado, en relación con la cantidad de recursos utilizados bajo condiciones establecidas. Esta característica se descompone en tres subcaracterísticas medibles: comportamiento temporal (tiempos de respuesta y procesamiento), utilización de recursos (cantidad y tipos de recursos consumidos) y capacidad (límites máximos de parámetros del sistema) .
+Un estudio sistemático reciente sobre eficiencia de desempeño en ISO/IEC 25010, que revisó 38 estudios primarios entre 2014 y 2024, identificó que el comportamiento temporal es la subcaracterística más investigada (48% de los estudios), seguida de la utilización de recursos (36%) y la capacidad (16%) . Este mismo estudio catalogó 68 métricas específicas para evaluar estas subcaracterísticas, lo que proporciona una base objetiva para medir y comparar el rendimiento del software.
+
+ISO/IEC 25010 resulta el estándar adecuado para esta investigación porque proporciona un vocabulario preciso y operacionalizable para definir las métricas de comparación. En lugar de hablar genéricamente de “rapidez” o “ligereza”, la norma permite especificar que se medirá el comportamiento temporal (tiempo de respuesta en milisegundos) y la utilización de recursos (consumo de memoria en megabytes) bajo condiciones controladas y reproducibles.
+Esta delimitación conceptual es requisito indispensable para que los resultados de la comparación entre aplicación web y aplicación Android sean interpretables y comparables con la literatura existente.
+
