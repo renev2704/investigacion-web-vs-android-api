@@ -62,3 +62,25 @@ Un estudio sistemático reciente sobre eficiencia de desempeño en ISO/IEC 25010
 ISO/IEC 25010 resulta el estándar adecuado para esta investigación porque proporciona un vocabulario preciso y operacionalizable para definir las métricas de comparación. En lugar de hablar genéricamente de “rapidez” o “ligereza”, la norma permite especificar que se medirá el comportamiento temporal (tiempo de respuesta en milisegundos) y la utilización de recursos (consumo de memoria en megabytes) bajo condiciones controladas y reproducibles.
 Esta delimitación conceptual es requisito indispensable para que los resultados de la comparación entre aplicación web y aplicación Android sean interpretables y comparables con la literatura existente.
 
+## **Arquitecturas de consumo de APIs REST**
+REST (Representational State Transfer) es un estilo arquitectónico para sistemas distribuidos, no una tecnología ni un toolkit específico. Su implementación se rige por una serie de restricciones de diseño que, cuando se cumplen en su totalidad, permiten calificar un servicio como “RESTful” . Las restricciones más relevantes para el consumo desde aplicaciones cliente son:
+
+**Cliente-servidor:** Separa las preocupaciones de interfaz de usuario (cliente) de las de almacenamiento y procesamiento de datos (servidor), permitiendo que cada componente evolucione independientemente.
+
+**Sin estado (stateless):** El servidor no mantiene información de sesión entre llamadas. Cada petición debe contener toda la información necesaria para ser procesada, lo que simplifica la escalabilidad del servidor, pero traslada al cliente la responsabilidad de gestionar el estado .
+
+**Interfaz uniforme:** Los recursos se identifican mediante URIs y se manipulan con un conjunto fijo de métodos HTTP (GET, POST, PUT, DELETE). Esta uniformidad simplifica el desacoplamiento arquitectónico.
+
+**Cacheable:** Las respuestas deben indicar explícitamente si son cacheables o no, lo que permite reducir interacciones y mejorar el rendimiento percibido.
+La diferencia fundamental entre consumir una API REST desde una **aplicación web** (HTML/CSS/JavaScript en navegador) y desde una **aplicación Android** (Kotlin/Retrofit) reside en el **modelo de ejecución y gestión de recursos** de cada plataforma:
+**En la aplicación web**, el navegador gestiona el ciclo de vida de las peticiones mediante fetch o XMLHttpRequest, aplica políticas de seguridad como CORS (Cross-Origin Resource Sharing), y delega la gestión de memoria al motor JavaScript del navegador. El costo de serialización/deserialización JSON ocurre en el hilo principal o en Web Workers, y la memoria está sujeta a las políticas de recolección de basura del navegador.
+En la aplicación Android, el framework proporciona bibliotecas especializadas como Retrofit/OkHttp que operan sobre el modelo de concurrencia de Android (hilos, corrutinas). La serialización JSON se realiza en el hilo de fondo, y la memoria utilizada proviene del heap gestionado por ART (Android Runtime), sujeto a las restricciones específicas de memoria por aplicación que impone el sistema operativo.
+Un estudio empírico que comparó aplicaciones nativas y aplicaciones web consumiendo los mismos servicios RESTful encontró que **las aplicaciones web no siempre presentan peor rendimiento que las nativas.** Los patrones de uso difieren según el estilo arquitectónico de cada plataforma, y variables como el número de conexiones de red, el tiempo de respuesta y el consumo de datos muestran diferencias que dependen del contexto.
+
+## **Métricas de rendimiento en aplicaciones**
+
+Las métricas de rendimiento cuantifican aspectos observables del comportamiento del software. Para esta investigación, las métricas centrales derivadas de ISO/IEC 25010 son:
+
+**Tiempo de respuesta:** Intervalo transcurrido entre el envío de una petición y la recepción completa de la respuesta. Esta métrica corresponde a la subcaracterística de comportamiento temporal. En aplicaciones web puede capturarse mediante performance.now() en JavaScript o la API de Performance del navegador. En Android, se registra mediante instrumentación con System.nanoTime() antes y después de la llamada al servicio.
+
+**Consumo de memoria:** Cantidad de memoria retenida durante la ejecución de una operación. Esta métrica corresponde a la subcaracterística de utilización de recursos. La medición debe realizarse con instrumentos específicos de cada plataforma, ya que los modelos de memoria son fundamentalmente distintos.
