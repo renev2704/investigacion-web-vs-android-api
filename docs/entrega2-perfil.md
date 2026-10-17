@@ -176,3 +176,82 @@ Esta investigación no involucra seres humanos, por lo que no requiere consentim
 **Declaración de uso de asistentes de IA:** se utilizó un asistente de IA como apoyo para revisión de redacción, generación del script de seeding y verificación de sintaxis de cadenas de búsqueda. Todas las decisiones metodológicas, selección de métricas, diseño experimental y análisis de resultados fueron realizados por el autor. El uso se declara en esta sección y en el README.md del repositorio.
 
 **Reproducibilidad:** el repositorio incluye scripts de generación de datos, configuraciones de entorno y documentación de decisiones para replicar el estudio.
+Eficiencia de desempeño según ISO/IEC 25010
+La norma ISO/IEC 25010 define la eficiencia de desempeño como la capacidad de un producto de software para proporcionar un rendimiento apropiado, en relación con la cantidad de recursos utilizados bajo condiciones establecidas.
+Esta característica se descompone en tres subcaracterísticas medibles: comportamiento temporal (tiempos de respuesta y procesamiento), utilización de recursos (cantidad y tipos de recursos consumidos) y capacidad (límites máximos de parámetros del sistema) .
+Un estudio sistemático reciente sobre eficiencia de desempeño en ISO/IEC 25010, que revisó 38 estudios primarios entre 2014 y 2024, identificó que el comportamiento temporal es la subcaracterística más investigada (48% de los estudios), seguida de la utilización de recursos (36%) y la capacidad (16%) .
+Este mismo estudio catalogó 68 métricas específicas para evaluar estas subcaracterísticas, lo que proporciona una base objetiva para medir y comparar el rendimiento del software.
+
+## **Marco teórico**
+
+**Eficiencia de desempeño según ISO/IEC 25010**
+
+La norma ISO/IEC 25010 define la eficiencia de desempeño como la capacidad de un producto de software para proporcionar un rendimiento apropiado, en relación con la cantidad de recursos utilizados bajo condiciones establecidas. Esta característica se descompone en tres subcaracterísticas medibles: comportamiento temporal (tiempos de respuesta y procesamiento), utilización de recursos (cantidad y tipos de recursos consumidos) y capacidad (límites máximos de parámetros del sistema) .
+Un estudio sistemático reciente sobre eficiencia de desempeño en ISO/IEC 25010, que revisó 38 estudios primarios entre 2014 y 2024, identificó que el comportamiento temporal es la subcaracterística más investigada (48% de los estudios), seguida de la utilización de recursos (36%) y la capacidad (16%) . Este mismo estudio catalogó 68 métricas específicas para evaluar estas subcaracterísticas, lo que proporciona una base objetiva para medir y comparar el rendimiento del software.
+
+ISO/IEC 25010 resulta el estándar adecuado para esta investigación porque proporciona un vocabulario preciso y operacionalizable para definir las métricas de comparación. En lugar de hablar genéricamente de “rapidez” o “ligereza”, la norma permite especificar que se medirá el comportamiento temporal (tiempo de respuesta en milisegundos) y la utilización de recursos (consumo de memoria en megabytes) bajo condiciones controladas y reproducibles.
+Esta delimitación conceptual es requisito indispensable para que los resultados de la comparación entre aplicación web y aplicación Android sean interpretables y comparables con la literatura existente.
+
+## **Arquitecturas de consumo de APIs REST**
+REST (Representational State Transfer) es un estilo arquitectónico para sistemas distribuidos, no una tecnología ni un toolkit específico. Su implementación se rige por una serie de restricciones de diseño que, cuando se cumplen en su totalidad, permiten calificar un servicio como “RESTful” . Las restricciones más relevantes para el consumo desde aplicaciones cliente son:
+
+**Cliente-servidor:** Separa las preocupaciones de interfaz de usuario (cliente) de las de almacenamiento y procesamiento de datos (servidor), permitiendo que cada componente evolucione independientemente.
+
+**Sin estado (stateless):** El servidor no mantiene información de sesión entre llamadas. Cada petición debe contener toda la información necesaria para ser procesada, lo que simplifica la escalabilidad del servidor, pero traslada al cliente la responsabilidad de gestionar el estado .
+
+**Interfaz uniforme:** Los recursos se identifican mediante URIs y se manipulan con un conjunto fijo de métodos HTTP (GET, POST, PUT, DELETE). Esta uniformidad simplifica el desacoplamiento arquitectónico.
+
+**Cacheable:** Las respuestas deben indicar explícitamente si son cacheables o no, lo que permite reducir interacciones y mejorar el rendimiento percibido.
+La diferencia fundamental entre consumir una API REST desde una **aplicación web** (HTML/CSS/JavaScript en navegador) y desde una **aplicación Android** (Kotlin/Retrofit) reside en el **modelo de ejecución y gestión de recursos** de cada plataforma:
+**En la aplicación web**, el navegador gestiona el ciclo de vida de las peticiones mediante fetch o XMLHttpRequest, aplica políticas de seguridad como CORS (Cross-Origin Resource Sharing), y delega la gestión de memoria al motor JavaScript del navegador. El costo de serialización/deserialización JSON ocurre en el hilo principal o en Web Workers, y la memoria está sujeta a las políticas de recolección de basura del navegador.
+En la aplicación Android, el framework proporciona bibliotecas especializadas como Retrofit/OkHttp que operan sobre el modelo de concurrencia de Android (hilos, corrutinas). La serialización JSON se realiza en el hilo de fondo, y la memoria utilizada proviene del heap gestionado por ART (Android Runtime), sujeto a las restricciones específicas de memoria por aplicación que impone el sistema operativo.
+Un estudio empírico que comparó aplicaciones nativas y aplicaciones web consumiendo los mismos servicios RESTful encontró que **las aplicaciones web no siempre presentan peor rendimiento que las nativas.** Los patrones de uso difieren según el estilo arquitectónico de cada plataforma, y variables como el número de conexiones de red, el tiempo de respuesta y el consumo de datos muestran diferencias que dependen del contexto.
+
+## **Métricas de rendimiento en aplicaciones**
+
+Las métricas de rendimiento cuantifican aspectos observables del comportamiento del software. Para esta investigación, las métricas centrales derivadas de ISO/IEC 25010 son:
+
+**Tiempo de respuesta:** Intervalo transcurrido entre el envío de una petición y la recepción completa de la respuesta. Esta métrica corresponde a la subcaracterística de comportamiento temporal. En aplicaciones web puede capturarse mediante performance.now() en JavaScript o la API de Performance del navegador. En Android, se registra mediante instrumentación con System.nanoTime() antes y después de la llamada al servicio.
+
+**Consumo de memoria:** Cantidad de memoria retenida durante la ejecución de una operación. Esta métrica corresponde a la subcaracterística de utilización de recursos. La medición debe realizarse con instrumentos específicos de cada plataforma, ya que los modelos de memoria son fundamentalmente distintos.
+
+## 1. Instrumentos de Medición
+
+* **Para aplicación web:**
+  * **Chrome DevTools (Performance panel):** Permite registrar y analizar métricas como LCP (*Largest Contentful Paint*), CLS (*Cumulative Layout Shift*) e INP (*Interaction to Next Paint*), además de proporcionar una línea de tiempo detallada de actividad de red, renderizado y ejecución de JavaScript. La API `performance.memory` permite obtener estimaciones del *heap* JavaScript utilizado.
+
+* **Para aplicación Android:**
+  * **Android Profiler (Memory Profiler):** Componente de Android Studio que muestra el uso de memoria en tiempo real, permite capturar *heap dumps*, forzar recolección de basura y rastrear asignaciones. Las categorías de memoria reportadas incluyen Java/Kotlin, Native, Graphics, Stack, Code y Other.
+
+* **Para backend y análisis complementario:**
+  * **JMH (Java Microbenchmark Harness):** Estándar de facto para microbenchmarks en JVM. Permite controlar iteraciones de calentamiento, mediciones y evitar sesgos del compilador JIT.
+  * **Apache JMeter:** Herramienta para pruebas de carga que simula usuarios concurrentes y mide *throughput*, tiempo de respuesta y tasas de error sobre *endpoints* HTTP.
+
+> **Nota:** La selección de estos instrumentos está fundamentada en su capacidad para producir mediciones comparables con las reportadas en la literatura y en su adecuación a las subcaracterísticas de ISO/IEC 25010 que esta investigación operacionaliza.
+
+---
+
+## 2. Sistemas de Inventario y Operaciones CRUD
+
+Un sistema de inventario es un tipo de sistema de información diseñado para gestionar el flujo de productos, existencias y movimientos dentro de una organización. Las operaciones fundamentales sobre los recursos de inventario (productos, categorías, movimientos de stock) corresponden al paradigma **CRUD** (*Create, Read, Update, Delete*), que en el contexto de APIs REST se mapea directamente a los métodos HTTP `POST`, `GET`, `PUT/PATCH` y `DELETE`.
+
+El sistema de inventario es un caso representativo para esta investigación por tres razones:
+
+1. **Operaciones repetitivas:** Las consultas de productos y actualizaciones de existencias son operaciones de alta frecuencia en entornos empresariales, lo que las hace susceptibles a diferencias de rendimiento que se acumulan con el uso.
+2. **Volúmenes crecientes de datos:** Un catálogo de inventario puede variar desde cientos hasta cientos de miles de registros. Esta variabilidad permite estudiar cómo el rendimiento de cada plataforma cliente se degrada (o no) a medida que aumenta el volumen de información transferida.
+3. **Payloads de tamaño variable:** Las respuestas de un *endpoint* de listado de productos escalan linealmente con el número de registros solicitados, lo que expone de manera directa las diferencias en los costos de serialización, transferencia y renderizado entre plataformas.
+
+Esta categoría justifica el dominio de aplicación elegido, ya que el inventario proporciona un escenario realista donde las decisiones sobre plataforma cliente (web vs Android) tienen implicaciones prácticas para desarrolladores y organizaciones que implementan sistemas multiplataforma.
+
+---
+
+## 3. Operacionalización de Variables
+
+| Variable | Definición operacional | Unidad | Instrumento |
+| :--- | :--- | :---: | :--- |
+| **Tiempo de respuesta web** | ms entre envío de petición `fetch` y recepción del último byte en Chrome | ms | Chrome DevTools / Performance API (`performance.now()`) |
+| **Tiempo de respuesta Android** | ms entre envío con Retrofit y callback `onResponse` | ms | Android Profiler + logs con `System.nanoTime()` |
+| **Consumo de memoria web** | MB retenidos en *heap* JS durante la operación | MB | `performance.memory` (Chrome) |
+| **Consumo de memoria Android** | MB retenidos en *heap* Java/Kotlin durante la operación | MB | Android Profiler (Memory Profiler) |
+| **Volumen de registros** | Número de filas en tabla productos/existencias | Entero | Script SQL de *seeding* |
+| **Tipo de operación** | CRUD: *Create, Read, Update, Delete* | Categórico | *Endpoint* invocado |
