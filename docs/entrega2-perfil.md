@@ -215,6 +215,125 @@ Las métricas de rendimiento cuantifican aspectos observables del comportamiento
 
 **Consumo de memoria:** Cantidad de memoria retenida durante la ejecución de una operación. Esta métrica corresponde a la subcaracterística de utilización de recursos. La medición debe realizarse con instrumentos específicos de cada plataforma, ya que los modelos de memoria son fundamentalmente distintos.
 
+# Metodología
+
+## Variables respuesta
+
+| Variable | Definición operacional | Unidad | Instrumento |
+|---|---|---|---|
+| Tiempo de respuesta web | ms entre envío de petición `fetch` y recepción del último byte | ms | `performance.now()` + Chrome DevTools |
+| Tiempo de respuesta Android | ms entre envío con Retrofit y callback `onResponse` | ms | `System.nanoTime()` + Android Profiler |
+| Consumo de memoria web | Memoria máxima retenida en heap JavaScript | MB | `performance.memory` |
+| Consumo de memoria Android | Memoria máxima retenida en heap Java/Kotlin | MB | Android Profiler (Memory Profiler) |
+
+## Repeticiones y calentamiento
+
+Se realizarán 10 repeticiones por celda, precedidas por 5 ejecuciones de calentamiento no registradas.
+
+**Total:** 240 ejecuciones registradas + 120 de calentamiento = **360 ejecuciones**.
+
+## Condiciones controladas
+
+- **Misma máquina servidor:** Intel Core i5-11400, 16 GB RAM, Windows 11.
+- **Misma red local:** ambas aplicaciones en la misma LAN, sin Internet.
+- **Sin otras cargas:** servidor sin procesos adicionales; dispositivo Android reiniciado antes de cada serie.
+- **Caché de SQL Server** reiniciada entre series.
+- **Caché del navegador** deshabilitada con `Cache-Control: no-cache`.
+- **Datos sintéticos idénticos** generados con script SQL reproducible.
+
+## Orden de ejecución
+
+El orden de las 24 celdas se aleatoriza con semilla fija (`seed = 42`). Dentro de cada celda, las 10 repeticiones se ejecutan consecutivamente con pausa de 2 segundos entre ellas.
+
+## Población, muestra o corpus
+
+Esta investigación no trabaja con personas, sino con artefactos de software y datos sintéticos.
+
+### Corpus de datos
+
+| Volumen | Descripción | Regla de generación |
+|---|---|---|
+| 1.000 registros | Catálogo pequeño | Script SQL con semilla fija |
+| 10.000 registros | Catálogo mediano | Script SQL con semilla fija |
+| 100.000 registros | Catálogo grande | Script SQL con semilla fija |
+
+**Justificación:** los tres volúmenes cubren tres órdenes de magnitud y permiten observar si la diferencia entre plataformas se mantiene, se amplifica o se invierte con el crecimiento. Son consistentes con los volúmenes usados en la literatura revisada.
+
+### Unidades de análisis
+
+Cada ejecución individual de una operación CRUD sobre una plataforma y volumen determinados constituye una unidad de análisis, produciendo dos mediciones: tiempo de respuesta (ms) y consumo de memoria (MB).
+
+## Plan de análisis
+
+El plan se define antes de la recolección de datos para evitar sesgos de confirmación.
+
+### Etapa 1 — Estadística descriptiva
+
+Media, mediana, desviación estándar, coeficiente de variación y diagramas de caja por celda.
+
+### Etapa 2 — Verificación de supuestos
+
+Shapiro-Wilk para normalidad (p > 0.05) y Levene para homogeneidad de varianzas (p > 0.05).
+
+### Etapa 3 — Pruebas de comparación
+
+| Comparación | Paramétrica | No paramétrica |
+|---|---|---|
+| Web vs Android (por celda) | t de Student | Mann-Whitney U |
+| Tres volúmenes (por plataforma) | ANOVA | Kruskal-Wallis |
+| Interacción plataforma × volumen | ANOVA de dos factores | — |
+
+Nivel de significancia: α = 0.05, con corrección de Bonferroni para comparaciones múltiples.
+
+### Etapa 4 — Tamaño del efecto
+
+d de Cohen (0.2 pequeño, 0.5 medio, 0.8 grande) y η² (0.01 pequeño, 0.06 medio, 0.14 grande).
+
+### Etapa 5 — Intervalos de confianza
+
+Intervalos de confianza al 95% para medias y diferencias.
+
+### Etapa 6 — Análisis de umbrales
+
+Gráfico de diferencia porcentual vs volumen; punto de inflexión donde supera el 20% (umbral práctico a priori).
+
+**Herramientas:** Python 3.12 (pandas, scipy.stats, matplotlib).
+
+## Amenazas a la validez
+
+| Tipo | Riesgo | Mitigación |
+|---|---|---|
+| Interna | Procesos en segundo plano en Android | Reinicio del dispositivo; cierre de apps; modo avión para datos móviles |
+| Interna | Caché del navegador acelera peticiones web | Caché deshabilitada; headers `no-cache`; perfil limpio |
+| Interna | Caché de SQL Server beneficia consultas repetidas | Reinicio de caché entre series |
+| Externa | Resultados solo aplican a SQL Server 2022 | Declarar alcance; recomendar replicación en PostgreSQL/MySQL |
+| Externa | Resultados solo aplican al hardware usado | Documentar hardware; declarar que valores absolutos pueden variar |
+| De constructo | `performance.memory` no comparable con Android Profiler | Reportar por separado; no mezclar en un mismo gráfico |
+| De constructo | Tiempo percibido ≠ tiempo medido | Medir red y tiempo total; declarar qué se mide |
+| De conclusión | 10 repeticiones pueden ser insuficientes | Reportar dispersión y CV; usar pruebas no paramétricas; calcular tamaño del efecto |
+| De conclusión | Correlación no implica causalidad | Solo describir diferencias observadas bajo condiciones controladas |
+
+## Consideraciones éticas
+
+Esta investigación no involucra seres humanos, por lo que no requiere consentimiento informado ni aprobación de comité de ética.
+
+- **Datos:** todos los datos son sintéticos y generados por script. No se utilizan datos reales ni información sensible.
+- **Licencias de software:** todas las herramientas son de acceso libre o gratuito para desarrollo (SQL Server Developer, OpenJDK 21, Spring Boot Apache 2.0, Kotlin Apache 2.0, Retrofit/OkHttp Apache 2.0, Chrome gratuito, Python PSF/BSD).
+- **Declaración de uso de asistentes de IA:** se utilizó un asistente de IA como apoyo para revisión de redacción, generación del script de seeding y verificación de sintaxis de cadenas de búsqueda. Todas las decisiones metodológicas, selección de métricas, diseño experimental y análisis de resultados fueron realizados por el autor. El uso se declara en esta sección y en el `README.md` del repositorio.
+- **Reproducibilidad:** el repositorio incluye scripts de generación de datos, configuraciones de entorno y documentación de decisiones para replicar el estudio.
+
+## Referencias bibliográficas
+
+- Android Developers. (s. f.). *Overview of memory management*. Google. https://developer.android.com/topic/performance/memory-overview
+- Bauer, S. (2025). *Kotlin Multiplatform, Flutter and Native iOS/Android: A performance comparison* [Tesis de maestría, FH Oberösterreich]. https://pure.fh-ooe.at/en/studentTheses/kotlin-multiplatform-flutter-and-native-iosandroida-performance-c/
+- Chrome for Developers. (s. f.). *Network features reference*. Google. https://developer.chrome.com/docs/devtools/network/reference/
+- International Organization for Standardization. (2011). *ISO/IEC 25010:2011: Systems and software engineering—Systems and software Quality Requirements and Evaluation (SQuaRE)—System and software quality models*. https://www.iso.org/standard/35733.html
+- Kaczmarczyk, A., Zając, P., & Zabierowski, W. (2022). Performance comparison of native and hybrid Android mobile applications based on sensor data-driven applications based on Bluetooth Low Energy (BLE) and Wi-Fi communication architecture. *Energies, 15*(13), 4574. https://doi.org/10.3390/en15134574
+- Liu, Y., Liu, X., Ma, Y., Liu, Y., Zheng, Z., Huang, G., & Blake, M. B. (2015). Characterizing RESTful Web services usage on smartphones: A tale of native apps and web apps. En *2015 IEEE International Conference on Web Services (ICWS)* (pp. 337–344). IEEE. https://doi.org/10.1109/ICWS.2015.53
+- Pratama, B. M. H., Hanggara, B. T., & Putra, W. H. N. (2025). Analisis perbandingan performa networking library Retrofit dan Volley dalam pengambilan data menggunakan REST API. *Jurnal Pengembangan Teknologi Informasi dan Ilmu Komputer, 9*(4). https://j-ptiik.ub.ac.id/index.php/j-ptiik/article/view/14725
+- Santoso, [iniciales], et al. (2025). *Performance comparison of Retrofit, Ktor Client, OkHttp and Volley in Android data fetching*. [Fuente del repositorio Garuda].
+- Universidad Técnica del Norte. (2023). *GraphQL o REST para aplicaciones móviles: Efectos en la calidad del software*. Repositorio Digital UTN. https://repositorio.utn.edu.ec/handle/123456789/19674
+- Universidad de Tartu. (s. f.). *Xamarini raamistikku platvormipöhiste tehnoloogiatega* [Comparación del framework Xamarin con tecnologías nativas]. Digikogu TalTech.
 ## 1. Instrumentos de Medición
 
 * **Para aplicación web:**
