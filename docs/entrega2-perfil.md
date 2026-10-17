@@ -46,6 +46,136 @@ Los criterios de inclusión son la relación directa con el rendimiento de aplic
 **Kotlin vs Flutter vs React Native (2025):** Evalúa el rendimiento de tres enfoques de desarrollo móvil en llamadas frecuentes a API, concluyendo que Kotlin nativo es el más rápido y estable, Flutter destaca en renderizado y React Native sufre por el puente JavaScript. Este antecedente confirma que la tecnología del cliente determina el rendimiento, pero al comparar solo frameworks móviles, no aporta evidencia sobre cómo se comportaría una aplicación web bajo las mismas condiciones.
 
 **Xamarin vs nativo (Universidad de Tartu):** Compara el rendimiento de Xamarin frente al desarrollo nativo en arranque y peticiones REST con operaciones masivas sobre SQLite (10,000 registros). Sus resultados muestran que el desarrollo nativo es aproximadamente 2× más rápido en arranque y peticiones, y usa hasta 20× menos memoria. Este estudio aporta evidencia sobre el impacto de la tecnología en el rendimiento y la memoria, pero al comparar frameworks y no plataformas (web vs Android), y al usar SQLite en lugar de SQL Server, no cubre el vacío que esta investigación aborda.
+
+# Diseño metodológico
+
+## Tipo y enfoque de investigación
+
+Esta investigación adopta un diseño de **benchmarking comparativo** con enfoque cuantitativo y alcance correlacional-explicativo. Según la clasificación presentada en la guía, el benchmarking comparativo es el diseño adecuado cuando se busca medir el desempeño de herramientas o configuraciones bajo una carga de trabajo definida, con calentamiento previo y series de mediciones repetidas.
+
+El estudio compara dos tratamientos técnicos —una aplicación web y una aplicación Android— que consumen los mismos endpoints de una API REST. No se manipulan variables de manera arbitraria, sino que se observa el comportamiento de cada plataforma bajo condiciones controladas y equivalentes. Por ello, el diseño también puede caracterizarse como **cuasi-experimental** con dos grupos de tratamiento (web y Android) y una variable de bloqueo (volumen de registros).
+
+El enfoque es **cuantitativo** porque todas las variables respuesta se expresan en unidades numéricas (milisegundos y megabytes) y se analizan mediante estadística descriptiva e inferencial. El alcance es **comparativo** porque el objetivo no es describir cada plataforma por separado, sino determinar si existen diferencias significativas entre ellas y en qué condiciones se manifiestan.
+
+## Diseño del experimento
+
+El experimento se estructura en torno a tres factores, una variable respuesta múltiple, un número definido de repeticiones y un conjunto de condiciones controladas.
+
+### Factores y niveles
+
+| Factor | Tipo | Niveles |
+|----------|----------|----------|
+| **Factor A: Plataforma de la aplicación** | Categórico | Aplicación web (Chrome 128) / Aplicación Android (Kotlin 2.0 + Retrofit 2.11) |
+| **Factor B: Volumen de registros** | Categórico ordinal | 1.000 / 10.000 / 100.000 registros |
+| **Factor C: Tipo de operación CRUD** | Categórico | Create (POST) / Read (GET) / Update (PUT) / Delete (DELETE) |
+
+La combinación completa de factores produce 2 × 3 × 4 = 24 celdas experimentales. Cada celda representa una condición única de prueba (por ejemplo: aplicación web, 10.000 registros, operación Read).
+
+### Variables respuesta
+
+| Variable | Definición operacional | Unidad | Instrumento |
+|----------|----------|----------|----------|
+| Tiempo de respuesta web | ms entre envío de petición fetch y recepción del último byte | ms | performance.now() + Chrome DevTools |
+| Tiempo de respuesta Android | ms entre envío con Retrofit y callback onResponse | ms | System.nanoTime() + Android Profiler |
+| Consumo de memoria web | Memoria máxima retenida en heap JavaScript | MB | performance.memory |
+| Consumo de memoria Android | Memoria máxima retenida en heap Java/Kotlin | MB | Android Profiler (Memory Profiler) |
+
+### Repeticiones y calentamiento
+
+Se realizarán 10 repeticiones por celda, precedidas por 5 ejecuciones de calentamiento no registradas. Total: 240 ejecuciones registradas + 120 de calentamiento = 360 ejecuciones.
+
+### Condiciones controladas
+
+1. **Misma máquina servidor:** Intel Core i5-11400, 16 GB RAM, Windows 11.
+2. **Misma red local:** Ambas aplicaciones en la misma LAN, sin Internet.
+3. **Sin otras cargas:** Servidor sin procesos adicionales; dispositivo Android reiniciado antes de cada serie.
+4. **Caché de SQL Server reiniciada** entre series.
+5. **Caché del navegador deshabilitada** con Cache-Control: no-cache.
+6. **Datos sintéticos idénticos** generados con script SQL reproducible.
+
+### Orden de ejecución
+
+El orden de las 24 celdas se aleatoriza con semilla fija (seed = 42). Dentro de cada celda, las 10 repeticiones se ejecutan consecutivamente con pausa de 2 segundos entre ellas.
+
+## Población, muestra o corpus
+
+Esta investigación no trabaja con personas, sino con artefactos de software y datos sintéticos.
+
+### Corpus de datos
+
+| Volumen | Descripción | Regla de generación |
+|----------|----------|----------|
+| **1.000 registros** | Catálogo pequeño | Script SQL con semilla fija |
+| **10.000 registros** | Catálogo mediano | Script SQL con semilla fija |
+| **100.000 registros** | Catálogo grande | Script SQL con semilla fija |
+
+**Justificación:** los tres volúmenes cubren tres órdenes de magnitud y permiten observar si la diferencia entre plataformas se mantiene, se amplifica o se invierte con el crecimiento. Son consistentes con los volúmenes usados en la literatura revisada.
+
+### Unidades de análisis
+
+Cada **ejecución individual** de una operación CRUD sobre una plataforma y volumen determinados constituye una unidad de análisis, produciendo dos mediciones: tiempo de respuesta (ms) y consumo de memoria (MB).
+
+## Plan de análisis
+
+El plan se define **antes** de la recolección de datos para evitar sesgos de confirmación.
+
+### Etapa 1 — Estadística descriptiva
+
+Media, mediana, desviación estándar, coeficiente de variación y diagramas de caja por celda.
+
+### Etapa 2 — Verificación de supuestos
+
+Shapiro-Wilk para normalidad (p > 0.05) y Levene para homogeneidad de varianzas (p > 0.05).
+
+### Etapa 3 — Pruebas de comparación
+
+| Comparación | Paramétrica | No paramétrica |
+|------------|------------|------------|
+| **Web vs Android (por celda)** | t de Student | Mann-Whitney U |
+| **Tres volúmenes (por plataforma)** | ANOVA | Kruskal-Wallis |
+| **Interacción plataforma × volumen** | ANOVA de dos factores | — |
+
+**Nivel de significancia:** α = 0.05, con corrección de Bonferroni para comparaciones múltiples.
+
+### Etapa 4 — Tamaño del efecto
+
+d de Cohen (0.2 pequeño, 0.5 medio, 0.8 grande) y η² (0.01 pequeño, 0.06 medio, 0.14 grande).
+
+### Etapa 5 — Intervalos de confianza
+
+Al 95% para medias y diferencias.
+
+### Etapa 6 — Análisis de umbrales
+
+Gráfico de diferencia porcentual vs volumen; punto de inflexión donde supera el 20% (umbral práctico a priori).
+
+**Herramientas:** Python 3.12 (pandas, scipy.stats, matplotlib).
+
+## Amenazas a la validez
+
+| Tipo | Riesgo | Mitigación |
+|--------|--------|--------|
+| **Interna** | Procesos en segundo plano en Android | Reinicio del dispositivo; cierre de apps; modo avión para datos móviles |
+| **Interna** | Caché del navegador acelera peticiones web | Caché deshabilitada; headers no-cache; perfil limpio |
+| **Interna** | Caché de SQL Server beneficia consultas repetidas | Reinicio de caché entre series |
+| **Externa** | Resultados solo aplican a SQL Server 2022 | Declarar alcance; recomendar replicación en PostgreSQL/MySQL |
+| **Externa** | Resultados solo aplican al hardware usado | Documentar hardware; declarar que valores absolutos pueden variar |
+| **De constructo** | performance.memory no comparable con Android Profiler | Reportar por separado; no mezclar en un mismo gráfico |
+| **De constructo** | Tiempo percibido ≠ tiempo medido | Medir red y tiempo total; declarar qué se mide |
+| **De conclusión** | 10 repeticiones pueden ser insuficientes | Reportar dispersión y CV; usar pruebas no paramétricas; calcular tamaño del efecto |
+| **De conclusión** | Correlación no implica causalidad | Solo describir diferencias observadas bajo condiciones controladas |
+
+## Consideraciones éticas
+
+Esta investigación no involucra seres humanos, por lo que no requiere consentimiento informado ni aprobación de comité de ética.
+
+**Datos:** todos los datos son **sintéticos** y generados por script. No se utilizan datos reales ni información sensible.
+
+**Licencias de software:** todas las herramientas son de acceso libre o gratuito para desarrollo (SQL Server Developer, OpenJDK 21, Spring Boot Apache 2.0, Kotlin Apache 2.0, Retrofit/OkHttp Apache 2.0, Chrome gratuito, Python PSF/BSD).
+
+**Declaración de uso de asistentes de IA:** se utilizó un asistente de IA como apoyo para revisión de redacción, generación del script de seeding y verificación de sintaxis de cadenas de búsqueda. Todas las decisiones metodológicas, selección de métricas, diseño experimental y análisis de resultados fueron realizados por el autor. El uso se declara en esta sección y en el README.md del repositorio.
+
+**Reproducibilidad:** el repositorio incluye scripts de generación de datos, configuraciones de entorno y documentación de decisiones para replicar el estudio.
 Eficiencia de desempeño según ISO/IEC 25010
 La norma ISO/IEC 25010 define la eficiencia de desempeño como la capacidad de un producto de software para proporcionar un rendimiento apropiado, en relación con la cantidad de recursos utilizados bajo condiciones establecidas.
 Esta característica se descompone en tres subcaracterísticas medibles: comportamiento temporal (tiempos de respuesta y procesamiento), utilización de recursos (cantidad y tipos de recursos consumidos) y capacidad (límites máximos de parámetros del sistema) .
@@ -204,3 +334,43 @@ Esta investigación no involucra seres humanos, por lo que no requiere consentim
 - Santoso, [iniciales], et al. (2025). *Performance comparison of Retrofit, Ktor Client, OkHttp and Volley in Android data fetching*. [Fuente del repositorio Garuda].
 - Universidad Técnica del Norte. (2023). *GraphQL o REST para aplicaciones móviles: Efectos en la calidad del software*. Repositorio Digital UTN. https://repositorio.utn.edu.ec/handle/123456789/19674
 - Universidad de Tartu. (s. f.). *Xamarini raamistikku platvormipöhiste tehnoloogiatega* [Comparación del framework Xamarin con tecnologías nativas]. Digikogu TalTech.
+## 1. Instrumentos de Medición
+
+* **Para aplicación web:**
+  * **Chrome DevTools (Performance panel):** Permite registrar y analizar métricas como LCP (*Largest Contentful Paint*), CLS (*Cumulative Layout Shift*) e INP (*Interaction to Next Paint*), además de proporcionar una línea de tiempo detallada de actividad de red, renderizado y ejecución de JavaScript. La API `performance.memory` permite obtener estimaciones del *heap* JavaScript utilizado.
+
+* **Para aplicación Android:**
+  * **Android Profiler (Memory Profiler):** Componente de Android Studio que muestra el uso de memoria en tiempo real, permite capturar *heap dumps*, forzar recolección de basura y rastrear asignaciones. Las categorías de memoria reportadas incluyen Java/Kotlin, Native, Graphics, Stack, Code y Other.
+
+* **Para backend y análisis complementario:**
+  * **JMH (Java Microbenchmark Harness):** Estándar de facto para microbenchmarks en JVM. Permite controlar iteraciones de calentamiento, mediciones y evitar sesgos del compilador JIT.
+  * **Apache JMeter:** Herramienta para pruebas de carga que simula usuarios concurrentes y mide *throughput*, tiempo de respuesta y tasas de error sobre *endpoints* HTTP.
+
+> **Nota:** La selección de estos instrumentos está fundamentada en su capacidad para producir mediciones comparables con las reportadas en la literatura y en su adecuación a las subcaracterísticas de ISO/IEC 25010 que esta investigación operacionaliza.
+
+---
+
+## 2. Sistemas de Inventario y Operaciones CRUD
+
+Un sistema de inventario es un tipo de sistema de información diseñado para gestionar el flujo de productos, existencias y movimientos dentro de una organización. Las operaciones fundamentales sobre los recursos de inventario (productos, categorías, movimientos de stock) corresponden al paradigma **CRUD** (*Create, Read, Update, Delete*), que en el contexto de APIs REST se mapea directamente a los métodos HTTP `POST`, `GET`, `PUT/PATCH` y `DELETE`.
+
+El sistema de inventario es un caso representativo para esta investigación por tres razones:
+
+1. **Operaciones repetitivas:** Las consultas de productos y actualizaciones de existencias son operaciones de alta frecuencia en entornos empresariales, lo que las hace susceptibles a diferencias de rendimiento que se acumulan con el uso.
+2. **Volúmenes crecientes de datos:** Un catálogo de inventario puede variar desde cientos hasta cientos de miles de registros. Esta variabilidad permite estudiar cómo el rendimiento de cada plataforma cliente se degrada (o no) a medida que aumenta el volumen de información transferida.
+3. **Payloads de tamaño variable:** Las respuestas de un *endpoint* de listado de productos escalan linealmente con el número de registros solicitados, lo que expone de manera directa las diferencias en los costos de serialización, transferencia y renderizado entre plataformas.
+
+Esta categoría justifica el dominio de aplicación elegido, ya que el inventario proporciona un escenario realista donde las decisiones sobre plataforma cliente (web vs Android) tienen implicaciones prácticas para desarrolladores y organizaciones que implementan sistemas multiplataforma.
+
+---
+
+## 3. Operacionalización de Variables
+
+| Variable | Definición operacional | Unidad | Instrumento |
+| :--- | :--- | :---: | :--- |
+| **Tiempo de respuesta web** | ms entre envío de petición `fetch` y recepción del último byte en Chrome | ms | Chrome DevTools / Performance API (`performance.now()`) |
+| **Tiempo de respuesta Android** | ms entre envío con Retrofit y callback `onResponse` | ms | Android Profiler + logs con `System.nanoTime()` |
+| **Consumo de memoria web** | MB retenidos en *heap* JS durante la operación | MB | `performance.memory` (Chrome) |
+| **Consumo de memoria Android** | MB retenidos en *heap* Java/Kotlin durante la operación | MB | Android Profiler (Memory Profiler) |
+| **Volumen de registros** | Número de filas en tabla productos/existencias | Entero | Script SQL de *seeding* |
+| **Tipo de operación** | CRUD: *Create, Read, Update, Delete* | Categórico | *Endpoint* invocado |
