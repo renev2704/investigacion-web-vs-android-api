@@ -85,8 +85,6 @@ Las métricas de rendimiento cuantifican aspectos observables del comportamiento
 
 **Consumo de memoria:** Cantidad de memoria retenida durante la ejecución de una operación. Esta métrica corresponde a la subcaracterística de utilización de recursos. La medición debe realizarse con instrumentos específicos de cada plataforma, ya que los modelos de memoria son fundamentalmente distintos.
 
-# Metodología y Operacionalización de Variables
-
 ## 1. Instrumentos de Medición
 
 * **Para aplicación web:**
