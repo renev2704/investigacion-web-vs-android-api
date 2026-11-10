@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Inventario - Panel Web</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Iconos (opcional, carga rápida desde CDN) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+<div class="layout">
+    <!-- MENÚ LATERAL -->
+    <aside class="sidebar">
+        <div class="logo">
+            <i class="fa-solid fa-boxes-stacked"></i>
+            <h2>Inventario</h2>
+        </div>
+        <nav class="menu">
+            <button class="menu-btn active" data-target="seccion-experimentos">
+                <i class="fa-solid fa-flask"></i> Panel de Experimentos
+            </button>
+            <button class="menu-btn" data-target="seccion-agregar">
+                <i class="fa-solid fa-plus"></i> Agregar Producto
+            </button>
+            <button class="menu-btn" data-target="seccion-listar">
+                <i class="fa-solid fa-list"></i> Listar Productos
+            </button>
+            <button class="menu-btn" data-target="seccion-informes">
+                <i class="fa-solid fa-chart-pie"></i> Informes
+            </button>
+        </nav>
+        <div class="footer-menu">
+            <p>Web vs Android - 2026</p>
+        </div>
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="content">
+        <header class="topbar">
+            <h1 id="titulo-seccion">Panel de Experimentos</h1>
+        </header>
+
+        <!-- SECCIÓN 1: EXPERIMENTOS -->
+        <section id="seccion-experimentos" class="seccion active">
+            <div class="card">
+                <h2>🧪 Configuración del Experimento</h2>
+                <div class="controles">
+                    <label>Volumen de datos:
+                        <select id="select-volumen">
+                            <option value="1000">1,000 registros</option>
+                            <option value="10000">10,000 registros</option>
+                            <option value="100000">100,000 registros</option>
+                        </select>
+                    </label>
+                    <label>Operación:
+                        <select id="select-operacion">
+                            <option value="READ">READ (Leer todos)</option>
+                            <option value="CREATE">CREATE (Crear)</option>
+                            <option value="UPDATE">UPDATE (Actualizar)</option>
+                            <option value="DELETE">DELETE (Borrar)</option>
+                        </select>
+                    </label>
+                    <button id="btn-iniciar-experimento" class="btn btn-primary">
+                        <i class="fa-solid fa-play"></i> Iniciar
+                    </button>
+                    <button id="btn-detener-experimento" class="btn btn-danger" disabled>
+                        <i class="fa-solid fa-stop"></i> Detener
+                    </button>
+                </div>
+                <div id="estado-experimento" class="estado">
+                    <i class="fa-solid fa-circle-info"></i> Listo para iniciar
+                </div>
+                <div class="progreso-contenedor">
+                    <div id="barra-progreso" class="progreso-barra"></div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>📊 Resultados en Vivo</h2>
+                <div id="contenedor-grafico" class="grafico-container">
+                    <canvas id="grafico-tiempos"></canvas>
+                </div>
+                <table class="tabla-resultados">
+                    <thead>
+                    <tr>
+                        <th>Repetición</th>
+                        <th>Operación</th>
+                        <th>Tiempo (ms)</th>
+                        <th>Código HTTP</th>
+                        <th>Estado</th>
+                    </tr>
+                    </thead>
+                    <tbody id="cuerpo-resultados">
+                    <!-- Filas dinámicas -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 2: AGREGAR PRODUCTO -->
+        <section id="seccion-agregar" class="seccion">
+            <div class="card">
+                <h2>➕ Crear Nuevo Producto</h2>
+                <form id="form-producto" class="formulario">
+                    <div class="form-group">
+                        <label>Código (SKU)</label>
+                        <input type="text" id="input-codigo" placeholder="Ej: WEB-001" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Nombre</label>
+                        <input type="text" id="input-nombre" placeholder="Nombre del producto" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Descripción</label>
+                        <input type="text" id="input-descripcion" placeholder="Opcional">
+                    </div>
+                    <div class="form-group">
+                        <label>Categoría</label>
+                        <select id="select-categoria" required>
+                            <option value="">Seleccione...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Precio Unitario</label>
+                        <input type="number" id="input-precio" step="0.01" placeholder="0.00" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Stock Inicial</label>
+                        <input type="number" id="input-stock" placeholder="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Stock Mínimo</label>
+                        <input type="number" id="input-stock-minimo" placeholder="0" required>
+                    </div>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fa-solid fa-save"></i> Guardar Producto
+                    </button>
+                </form>
+                <p id="mensaje-formulario"></p>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 3: LISTAR PRODUCTOS -->
+        <section id="seccion-listar" class="seccion">
+            <div class="card">
+                <div class="card-header">
+                    <h2>📋 Lista de Productos <span id="contador-productos">(0)</span></h2>
+                    <div class="acciones-tabla">
+                        <input type="text" id="input-buscar" placeholder="🔍 Buscar por nombre o código...">
+                        <button id="btn-recargar" class="btn btn-primary">
+                            <i class="fa-solid fa-rotate"></i> Recargar
+                        </button>
+                    </div>
+                </div>
+                <table id="tabla-productos" class="tabla-datos">
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Código</th>
+                        <th>Nombre</th>
+                        <th>Categoría</th>
+                        <th>Precio</th>
+                        <th>Stock</th>
+                        <th>Acciones</th>
+                    </tr>
+                    </thead>
+                    <tbody id="cuerpo-tabla">
+                    <!-- Filas dinámicas -->
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 4: INFORMES -->
+        <section id="seccion-informes" class="seccion">
+            <div class="card">
+                <h2>📈 Resumen de Datos</h2>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <i class="fa-solid fa-box"></i>
+                        <h3 id="stat-total-productos">0</h3>
+                        <p>Total Productos</p>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <h3 id="stat-bajo-stock">0</h3>
+                        <p>Productos Bajo Stock</p>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fa-solid fa-dollar-sign"></i>
+                        <h3 id="stat-valor-inventario">$0.00</h3>
+                        <p>Valor del Inventario</p>
+                    </div>
+                    <div class="stat-card">
+                        <i class="fa-solid fa-clock"></i>
+                        <h3 id="stat-mediciones-total">0</h3>
+                        <p>Mediciones Registradas</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<!-- Scripts -->
+<!-- Chart.js para el gráfico en vivo -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="js/api.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/experimento.js"></script>
+</body>
+</html>
