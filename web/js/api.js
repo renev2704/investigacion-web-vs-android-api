@@ -80,8 +80,8 @@ async function registrarMovimiento(movimiento) {
 // ==========================================
 
 async function enviarMediciones(mediciones) {
-    // El endpoint acepta un array
-    const response = await fetch(`${API_BASE_URL}/mediciones`, {
+    // El endpoint ahora es /lote para enviar la lista completa
+    const response = await fetch(`${API_BASE_URL}/mediciones/lote`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(mediciones)

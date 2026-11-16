@@ -105,6 +105,10 @@ async function ejecutarOperacion(operacion, repeticion, esCalentamiento, volumen
     let tiempoMs = 0;
     let codigoHttp = 0;
     let exitoso = false;
+    let memoriaMB = 0;
+
+    // 1. Medir memoria ANTES de la petición (si el navegador lo soporta)
+    const memoriaAntes = performance.memory ? performance.memory.usedJSHeapSize : 0;
 
     try {
         const inicio = performance.now();
@@ -117,7 +121,6 @@ async function ejecutarOperacion(operacion, repeticion, esCalentamiento, volumen
                 exitoso = res.ok;
                 break;
             case 'CREATE':
-                // Crear un producto único por cada repetición
                 const codigoUnico = `WEB-C-${volumen}-${repeticion}-${Date.now()}`;
                 const nuevo = {
                     codigo: codigoUnico, nombre: `Test ${codigoUnico}`,
@@ -130,7 +133,6 @@ async function ejecutarOperacion(operacion, repeticion, esCalentamiento, volumen
                 exitoso = resCreate.ok;
                 break;
             case 'UPDATE':
-                // Actualizar el producto N/2
                 const idUpdate = Math.floor(volumen / 2);
                 const resUpdate = await fetch(`http://localhost:8080/api/productos/${idUpdate}`, {
                     method: 'PUT', headers: {'Content-Type': 'application/json'},
@@ -140,11 +142,11 @@ async function ejecutarOperacion(operacion, repeticion, esCalentamiento, volumen
                 exitoso = resUpdate.ok;
                 break;
             case 'DELETE':
-                // Borrar un id distinto por repetición (1, 2, 3...)
-                const idDelete = repeticionActual; // 1, 2, 3... hasta 15
+                // Borrar un id distinto por repetición. Si intenta borrar uno que no existe (404), lo tomamos como válido para no romper la prueba.
+                const idDelete = repeticionActual;
                 const resDelete = await fetch(`http://localhost:8080/api/productos/${idDelete}`, { method: 'DELETE' });
                 codigoHttp = resDelete.status;
-                exitoso = resDelete.ok || resDelete.status === 404; // 404 es válido si ya se borró
+                exitoso = resDelete.ok || resDelete.status === 404;
                 break;
         }
 
@@ -156,11 +158,19 @@ async function ejecutarOperacion(operacion, repeticion, esCalentamiento, volumen
         exitoso = false;
     }
 
+    // 2. Medir memoria DESPUÉS y calcular la diferencia en MB
+    if (performance.memory) {
+        const memoriaDespues = performance.memory.usedJSHeapSize;
+        const diferenciaBytes = memoriaDespues - memoriaAntes;
+        memoriaMB = diferenciaBytes > 0 ? (diferenciaBytes / (1024 * 1024)) : 0; // Convertir a MB
+    }
+
     // Guardar medición
     medicionesRecolectadas.push({
         plataforma: 'WEB', volumen: volumen, operacion: operacion,
         repeticion: repeticion, esCalentamiento: esCalentamiento,
-        tiempoRespuestaMs: tiempoMs, memoriaMB: null,
+        tiempoRespuestaMs: tiempoMs,
+        memoriaMB: memoriaMB, // <-- AHORA SÍ SE GUARDA LA MEMORIA
         codigoHttp: codigoHttp, dispositivo: 'Chrome 128'
     });
 
@@ -171,12 +181,13 @@ async function ejecutarOperacion(operacion, repeticion, esCalentamiento, volumen
         chartInstance.update();
     }
 
-    // Agregar fila a la tabla
+    // Agregar fila a la tabla HTML (agregamos la columna de memoria)
     const fila = document.createElement('tr');
     fila.innerHTML = `
         <td>${repeticion} ${esCalentamiento ? '(Calent.)' : ''}</td>
         <td>${operacion}</td>
         <td><strong>${tiempoMs.toFixed(2)} ms</strong></td>
+        <td>${memoriaMB > 0 ? memoriaMB.toFixed(2) + ' MB' : '0.00 MB'}</td>
         <td>${codigoHttp}</td>
         <td>${exitoso ? '✅' : '❌'}</td>
     `;
